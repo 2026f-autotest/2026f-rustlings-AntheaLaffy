@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -56,11 +55,11 @@ impl<T> LinkedList<T> {
         self.length += 1;
     }
 
-    pub fn get(&mut self, index: i32) -> Option<&T> {
+    pub fn get(&self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
 
-    fn get_ith_node(&mut self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
+    fn get_ith_node(&self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
         match node {
             None => None,
             Some(next_ptr) => match index {
@@ -70,13 +69,45 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where T: PartialOrd + Clone,
 	{
 		//TODO
-		Self {
+        // 两个已经排好序的单链表a，b 合并
+        // 每次我需要对比当前未排序的最小的元素。
+        // 1. 两个都有值，取最小
+        // 2. 一个指向None，另一个有值，则接下来无须比较，把另一条的剩下所有元素都放进来
+        // 当前最小可以两个指针来表示，已经放入第三方链条的就走一步。
+        // 但如果是原地修改呢？我看看有没有插入的方法，无，这条路放弃
+
+		let mut merge = Self {
             length: 0,
             start: None,
             end: None,
+        };
+        
+        let mut a = 0i32;
+        let mut b = 0i32;
+        loop{
+            match (list_a.get(a), list_b.get(b)){
+                (Some(ta), Some(tb)) => if ta < tb{
+                    merge.add(ta.clone());
+                    a += 1;
+                }else{
+                    merge.add(tb.clone());
+                    b += 1;
+                },
+                _ => break,
+            }
         }
+            while let Some(tb) = list_b.get(b){
+                merge.add(tb.clone());
+                b += 1;
+        }
+            while let Some(ta) = list_a.get(a){
+                merge.add(ta.clone());
+                a += 1;
+        }
+        merge
 	}
 }
 

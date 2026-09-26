@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -36,10 +35,24 @@ where
         self.len() == 0
     }
 
-    pub fn add(&mut self, value: T) {
-        //TODO
-    }
 
+pub fn add(&mut self, value: T) {
+    self.items.push(value);
+    self.count += 1;
+
+    let mut idx = self.count;
+
+    while idx > 1 {
+        let parent = self.parent_idx(idx);
+
+        if (self.comparator)(&self.items[idx], &self.items[parent]) {
+            self.items.swap(idx, parent);
+            idx = parent;
+        } else {
+            break;
+        }
+    }
+}
     fn parent_idx(&self, idx: usize) -> usize {
         idx / 2
     }
@@ -56,10 +69,20 @@ where
         self.left_child_idx(idx) + 1
     }
 
-    fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+fn smallest_child_idx(&self, idx: usize) -> usize {
+    let left = self.left_child_idx(idx);
+    let right = self.right_child_idx(idx);
+
+    if right > self.count {
+        return left;
     }
+
+    if (self.comparator)(&self.items[left], &self.items[right]) {
+        left
+    } else {
+        right
+    }
+}
 }
 
 impl<T> Heap<T>
@@ -83,10 +106,35 @@ where
 {
     type Item = T;
 
-    fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+fn next(&mut self) -> Option<T> {
+    if self.count == 0 {
+        return None;
     }
+
+    // root 和最后一个元素交换
+    self.items.swap(1, self.count);
+
+    // 原来的 root 现在在最后
+    let result = self.items.pop();
+
+    self.count -= 1;
+
+    // 从 root 开始向下修复
+    let mut idx = 1;
+
+    while self.children_present(idx) {
+        let child = self.smallest_child_idx(idx);
+
+        if (self.comparator)(&self.items[child], &self.items[idx]) {
+            self.items.swap(child, idx);
+            idx = child;
+        } else {
+            break;
+        }
+    }
+
+    result
+}
 }
 
 pub struct MinHeap;

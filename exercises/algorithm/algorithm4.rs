@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -14,8 +13,16 @@ where
     T: Ord,
 {
     value: T,
-    left: Option<Box<TreeNode<T>>>,
-    right: Option<Box<TreeNode<T>>>,
+    left: Tree<T>,
+    right: Tree<T>,
+}
+
+#[derive(Debug)]
+struct Tree<T>
+where
+    T: Ord,
+{
+    node: Option<Box<TreeNode<T>>>,
 }
 
 #[derive(Debug)]
@@ -23,7 +30,7 @@ struct BinarySearchTree<T>
 where
     T: Ord,
 {
-    root: Option<Box<TreeNode<T>>>,
+    root: Tree<T>,
 }
 
 impl<T> TreeNode<T>
@@ -33,8 +40,8 @@ where
     fn new(value: T) -> Self {
         TreeNode {
             value,
-            left: None,
-            right: None,
+            left: Tree::new(),
+            right: Tree::new(),
         }
     }
 }
@@ -43,33 +50,59 @@ impl<T> BinarySearchTree<T>
 where
     T: Ord,
 {
-
     fn new() -> Self {
-        BinarySearchTree { root: None }
+        BinarySearchTree { root: Tree::new(), }
     }
 
-    // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        self.root.insert(value);
     }
-
-    // Search for a value in the BST
-    fn search(&self, value: T) -> bool {
-        //TODO
-        true
+    
+    fn search(&self, value: T) -> bool{
+        self.root.search(&value)
     }
 }
 
-impl<T> TreeNode<T>
+impl<T> Tree<T>
 where
     T: Ord,
 {
-    // Insert a node into the tree
+    fn new() -> Self {
+        Tree { node: None }
+    }
+
     fn insert(&mut self, value: T) {
-        //TODO
+        match &mut self.node {
+            None => {
+                self.node = Some(Box::new(TreeNode::new(value)));
+            }
+
+            Some(current) => {
+                if value < current.value {
+                    current.left.insert(value);
+                } else if value > current.value {
+                    current.right.insert(value);
+                }
+            }
+        }
+    }
+
+    fn search(&self, value: &T) -> bool {
+        match &self.node {
+            None => false,
+
+            Some(current) => {
+                if value == &current.value {
+                    true
+                } else if value < &current.value {
+                    current.left.search(value)
+                } else {
+                    current.right.search(value)
+                }
+            }
+        }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -113,10 +146,10 @@ mod tests {
         assert_eq!(bst.search(1), true);
 
         
-        match bst.root {
+        match bst.root.node {
             Some(ref node) => {
-                assert!(node.left.is_none());
-                assert!(node.right.is_none());
+                assert!(node.left.node.is_none());
+                assert!(node.right.node.is_none());
             },
             None => panic!("Root should not be None after insertion"),
         }
